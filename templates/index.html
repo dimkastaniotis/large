@@ -3,80 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Νόμος των Μεγάλων Αριθμών</title>
+    <title>Προσομοίωση Ρίψης Νομίσματος - Κορώνα/Γράμματα</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.20.0/plotly.min.js"></script>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Arial', sans-serif;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #4a6fa5;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px 10px 0 0;
+        }
+        .coin-result {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 5px;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+        .korona {
+            background-color: #ffd700;
+            color: #333;
+        }
+        .grammata {
+            background-color: #c0c0c0;
+            color: #333;
+        }
+        .result-summary {
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+        .progress {
+            height: 30px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #4a6fa5;
+            border-color: #4a6fa5;
+        }
+        .btn-primary:hover {
+            background-color: #385d8a;
+            border-color: #385d8a;
+        }
+        #coin-results-container {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .theoretical-line {
+            border-top: 2px dashed #ff4136;
+            position: relative;
+            margin: 10px 0;
+        }
+        .theoretical-label {
+            position: absolute;
+            right: 0;
+            top: -10px;
+            background-color: #fff;
+            padding: 0 5px;
+            color: #ff4136;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-12 text-center">
-                <h1>Νόμος των Μεγάλων Αριθμών</h1>
-                <p class="lead">Οπτικοποίηση της σύγκλισης του μέσου όρου προς την πραγματική πιθανότητα όσο αυξάνεται ο αριθμός των δοκιμών</p>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-md-4">
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
                 <div class="card">
-                    <div class="card-header">Παράμετροι</div>
+                    <div class="card-header text-center">
+                        <h1>Προσομοίωση Ρίψης Νομίσματος - Κορώνα/Γράμματα</h1>
+                    </div>
                     <div class="card-body">
-                        <form id="simulation-form" onsubmit="return false;">
-                            <div class="mb-3">
-                                <label for="probability" class="form-label">Πιθανότητα επιτυχίας:</label>
-                                <input type="range" class="form-range" id="probability" min="0.01" max="0.99" step="0.01" value="0.5">
-                                <div class="text-center" id="probability-value">0.5</div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">Ρυθμίσεις</div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="korona-probability" class="form-label">Πιθανότητα Κορώνας:</label>
+                                            <input type="range" class="form-range" id="korona-probability" min="0.01" max="0.99" step="0.01" value="0.5">
+                                            <div class="text-center" id="korona-probability-value">50%</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="num-flips" class="form-label">Αριθμός ρίψεων:</label>
+                                            <select class="form-select" id="num-flips">
+                                                <option value="100">100</option>
+                                                <option value="500">500</option>
+                                                <option value="1000" selected>1,000</option>
+                                                <option value="5000">5,000</option>
+                                                <option value="10000">10,000</option>
+                                                <option value="100000">100,000</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <button id="run-simulation" class="btn btn-primary w-100">Εκτέλεση Προσομοίωσης</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mt-3">
+                                    <div class="card-header">Νόμος των Μεγάλων Αριθμών</div>
+                                    <div class="card-body">
+                                        <p>Καθώς ο αριθμός των ρίψεων αυξάνεται, το ποσοστό εμφάνισης της Κορώνας τείνει προς την πραγματική πιθανότητα.</p>
+                                        <p>Δοκιμάστε με διαφορετικές πιθανότητες και αριθμό ρίψεων!</p>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="num-trials" class="form-label">Αριθμός δοκιμών:</label>
-                                <select class="form-select" id="num-trials">
-                                    <option value="100">100</option>
-                                    <option value="500">500</option>
-                                    <option value="1000" selected>1,000</option>
-                                    <option value="5000">5,000</option>
-                                    <option value="10000">10,000</option>
-                                    <option value="100000">100,000</option>
-                                </select>
-                            </div>
-                            
-                            <button type="button" id="run-simulation" class="btn btn-primary w-100">Εκτέλεση Προσομοίωσης</button>
-                        </form>
-                    </div>
-                </div>
-                
-                <div class="card mt-3">
-                    <div class="card-header">Επεξήγηση</div>
-                    <div class="card-body">
-                        <p>Ο <strong>Νόμος των Μεγάλων Αριθμών</strong> αναφέρει ότι καθώς ο αριθμός των δοκιμών αυξάνεται, ο μέσος όρος των αποτελεσμάτων τείνει προς την αναμενόμενη τιμή (πραγματική πιθανότητα).</p>
-                        <p>Στο γράφημα, η μπλε γραμμή δείχνει τον τρέχοντα μέσο όρο μετά από κάθε δοκιμή, ενώ η κόκκινη διακεκομμένη γραμμή δείχνει την πραγματική πιθανότητα.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">Αποτελέσματα</div>
-                    <div class="card-body">
-                        <div id="simulation-plot" style="width: 100%; height: 400px;"></div>
-                        <div class="text-center mt-3">
-                            <div id="result-text" class="alert alert-info" role="alert">
-                                Πατήστε το κουμπί "Εκτέλεση Προσομοίωσης" για να δείτε τα αποτελέσματα.
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">Αποτελέσματα</div>
+                                    <div class="card-body">
+                                        <div id="loading" class="d-none text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Φόρτωση...</span>
+                                            </div>
+                                            <p class="mt-2">Εκτέλεση προσομοίωσης...</p>
+                                        </div>
+                                        
+                                        <div id="results" class="d-none">
+                                            <h4>Τελικά Αποτελέσματα:</h4>
+                                            <div class="result-summary">
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div>Κορώνα (Κ): <span id="korona-count">0</span> (<span id="korona-percentage">0%</span>)</div>
+                                                        <div class="progress">
+                                                            <div id="korona-progress" class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div>Γράμματα (Γ): <span id="grammata-count">0</span> (<span id="grammata-percentage">0%</span>)</div>
+                                                        <div class="progress">
+                                                            <div id="grammata-progress" class="progress-bar bg-secondary" role="progressbar" style="width: 0%"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="theoretical-line mt-3">
+                                                    <div class="theoretical-label">Θεωρητική πιθανότητα: <span id="theoretical-probability">50%</span></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <h5>Πρόσφατες ρίψεις (πρώτες 100):</h5>
+                                                <div id="coin-results-container" class="text-center"></div>
+                                            </div>
+                                            
+                                            <h5>Σύγκλιση προς τη θεωρητική πιθανότητα:</h5>
+                                            <div id="convergence-plot" style="width: 100%; height: 300px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row mt-4">
-            <div class="col-12 text-center text-muted">
-                <p>Δημιουργήθηκε με Flask και Plotly.js</p>
-            </div>
-        </div>
     </div>
-
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const koronaProbSlider = document.getElementById('korona-probability');
+            const koronaProbValue = document.getElementById('korona-probability-value');
+            const numFlipsSelect = document.getElementById('num-flips');
+            const runSimulationBtn = document.getElementById('run-simulation');
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            const coinResultsContainer = document.getElementById('coin-results-container');
+            const koronaCount = document.getElementById('korona-count');
+            const grammataCount = document.getElementById('grammata-count');
+            const koronaPercentage = document.getElementById('korona-percentage');
+            const grammataPercentage = document.getElementById('grammata-percentage');
+            const koronaProgress = document.getElementById('korona-progress');
+            const grammataProgress = document.getElementById('grammata-progress');
+            const theoreticalProbability = document.getElementById('theoretical-probability');
+            const convergencePlot = document.getElementById('convergence-plot');
+            
+            // Ενημέρωση της τιμής πιθανότητας
+            koronaProbSlider.addEventListener('input', function() {
+                const value = (this.value * 100).toFixed(0);
+                koronaProbValue.textContent = `${value}%`;
+            });
+            
+            // Εκτέλεση προσομοίωσης
+            runSimulationBtn.addEventListener('click', async function() {
+                // Εμφάνιση κατάστασης φόρτωσης
+                loadingDiv.classList.remove('d-none');
+                resultsDiv.classList.add('d-none');
+                runSimulationBtn.disabled = true;
+                
+                try {
+                    const probability = parseFloat(koronaProbSlider.value);
+                    const numFlips = parseInt(numFlipsSelect.value);
+                    
+                    // Αποστολή αιτήματος στο server
+                    const response = await fetch('/simulate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            korona_probability: probability,
+                            num_flips: numFlips
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Σφάλμα: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Εμφάνιση αποτελεσμάτων ρίψεων
+                    coinResultsContainer.innerHTML = '';
+                    data.flip_results.forEach(result => {
+                        const coinDiv = document.createElement('div');
+                        coinDiv.className = `coin-result ${result === 'Κ' ? 'korona' : 'grammata'}`;
+                        coinDiv.textContent = result;
+                        coinResultsContainer.appendChild(coinDiv);
+                    });
+                    
+                    // Ενημέρωση μετρητών και ποσοστών
+                    koronaCount.textContent = data.korona_count.toLocaleString();
+                    grammataCount.textContent = data.grammata_count.toLocaleString();
+                    koronaPercentage.textContent = `${data.korona_percentage.toFixed(2)}%`;
+                    grammataPercentage.textContent = `${data.grammata_percentage.toFixed(2)}%`;
+                    
+                    // Ενημέρωση progress bars
+                    koronaProgress.style.width = `${data.korona_percentage}%`;
+                    grammataProgress.style.width = `${data.grammata_percentage}%`;
+                    
+                    // Ενημέρωση θεωρητικής πιθανότητας
+                    theoreticalProbability.textContent = `${data.theoretical.toFixed(0)}%`;
+                    
+                    // Δημιουργία γραφήματος σύγκλισης
+                    Plotly.newPlot(convergencePlot, [{
+                        x: data.x_values,
+                        y: data.running_percentages,
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#4a6fa5'},
+                        name: 'Ποσοστό Κορώνας'
+                    }, {
+                        x: [1, Math.max(...data.x_values)],
+                        y: [data.theoretical, data.theoretical],
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {dash: 'dash', color: '#ff4136'},
+                        name: 'Θεωρητική Πιθανότητα'
+                    }], {
+                        margin: {l: 40, r: 40, t: 20, b: 40},
+                        xaxis: {
+                            title: 'Αριθμός Ρίψεων',
+                            type: 'log'
+                        },
+                        yaxis: {
+                            title: 'Ποσοστό Κορώνας (%)',
+                            range: [0, 100]
+                        },
+                        legend: {orientation: 'h', y: -0.2}
+                    });
+                    
+                    // Εμφάνιση των αποτελεσμάτων
+                    loadingDiv.classList.add('d-none');
+                    resultsDiv.classList.remove('d-none');
+                    
+                } catch (error) {
+                    console.error('Σφάλμα:', error);
+                    alert('Σφάλμα κατά την εκτέλεση της προσομοίωσης: ' + error.message);
+                    loadingDiv.classList.add('d-none');
+                } finally {
+                    runSimulationBtn.disabled = false;
+                }
+            });
+            
+            // Αρχική τιμή του slider
+            koronaProbValue.textContent = '50%';
+        });
+    </script>
 </body>
 </html>
