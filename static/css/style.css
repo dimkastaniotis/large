@@ -1,1 +1,33 @@
+body {
+    background-color: #f8f9fa;
+}
 
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #f1f8ff;
+    font-weight: bold;
+}
+
+#probability-value {
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+#simulation-plot {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#result-text {
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    #simulation-plot {
+        height: 300px;
+    }
+}
